@@ -18,6 +18,11 @@ namespace CaseLightingMod
         private SerialPort dataStream;
         private PerformanceCounter cpuCounter;
         Timer cpuTimer = new Timer();
+        int numReadings = 20;
+        int[] readings = new int[20];
+        int readIndex = 0;
+        int total = 0;
+        int average = 0;
         //String modType = "mod,0";
 
         public Form1()
@@ -37,7 +42,7 @@ namespace CaseLightingMod
             cpuCounter.InstanceName = "_Total";
 
             
-            cpuTimer.Interval = (250);
+            cpuTimer.Interval = (500);
             cpuTimer.Tick += new EventHandler(cpu_reader_tick);
 
         }
@@ -110,10 +115,24 @@ namespace CaseLightingMod
         private void cpu_reader_tick(object sender, EventArgs e)
         {
             float perc = getCurrentCpuFloat();
-            int red = (int)Math.Round(perc * 2.55);
-            int green = 255 - (int)Math.Round(perc*2.55);
-            Console.WriteLine(red + "," + green);
-            writeSerial("cRGB," + red + "," + green + "," + 0);
+            //float perc = 70;
+
+            total = total - readings[readIndex];
+            readings[readIndex] = (int)Math.Round(perc);
+            total = total + readings[readIndex];
+            readIndex++;
+
+            if (readIndex >= numReadings)
+            {
+                readIndex = 0;
+            }
+
+            average = total / numReadings;
+
+            int blue = 240 - (int)Math.Round(average * 2.55);
+            int green = 240 - (int)Math.Round(average * 2.55);
+            Console.WriteLine(average);
+            writeSerial("cRGB," + 255 + "," + green + "," + blue);
         }
 
         private void connectSerial(object sender, System.EventArgs e)
@@ -193,7 +212,7 @@ namespace CaseLightingMod
             try
             {
                 dataStream.WriteLine(command);
-                //dataStream.BaseStream.Flush();
+                dataStream.BaseStream.Flush();
             }
             catch
             {
