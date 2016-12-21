@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.toggleSwitch1 = new JCS.ToggleSwitch();
             this.colorWheel1 = new Cyotek.Windows.Forms.ColorWheel();
             this.toggleSwitch2 = new JCS.ToggleSwitch();
@@ -184,9 +185,10 @@
             this.Controls.Add(this.toggleSwitch1);
             this.Controls.Add(this.colorWheel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "CaseLighting";
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

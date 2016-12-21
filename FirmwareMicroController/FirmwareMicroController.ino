@@ -32,7 +32,8 @@ int uptime_delay = 50;
 unsigned long uptime_time = millis();
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.setTimeout(50);
   inputString.reserve(200);
 
   pinMode(REDPIN, OUTPUT);

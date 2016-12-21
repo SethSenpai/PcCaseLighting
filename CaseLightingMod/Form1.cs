@@ -10,11 +10,15 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.IO;
 using System.Diagnostics;
+using CaseLightingMod.Properties;
 
 namespace CaseLightingMod
 {
     public partial class Form1 : Form
     {
+        private NotifyIcon trayIcon;
+        private ContextMenu trayMenu;
+
         private SerialPort dataStream;
         private PerformanceCounter cpuCounter;
         Timer cpuTimer = new Timer();
@@ -23,6 +27,8 @@ namespace CaseLightingMod
         int readIndex = 0;
         int total = 0;
         int average = 0;
+
+
         //String modType = "mod,0";
 
         public Form1()
@@ -40,14 +46,74 @@ namespace CaseLightingMod
             cpuCounter.CategoryName = "Processor";
             cpuCounter.CounterName = "% Processor Time";
             cpuCounter.InstanceName = "_Total";
-
-            
+                        
             cpuTimer.Interval = (500);
             cpuTimer.Tick += new EventHandler(cpu_reader_tick);
 
+            //this.ClientSize = new System.Drawing.Size(284, 262);
+            this.Name = "Program";
+
+            trayMenu = new ContextMenu();
+            trayMenu.MenuItems.Add("Exit", closeApp);
+            trayMenu.MenuItems.Add("Show", FormShow);
+            trayIcon = new NotifyIcon();
+            trayIcon.Text = "CaseLighting";
+            trayIcon.Icon = Resources.CaseLightMod;
+            trayIcon.ContextMenu = trayMenu;
+            trayIcon.Visible = true;
+            trayIcon.MouseClick += new MouseEventHandler(Form1_open);
+            TopMost = true;
+            Resize += new EventHandler(Form1_Resize);
         }
 
-        private void toggleSwitch1_MouseClick(object sender, MouseEventArgs e)
+        void Form1_Resize(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                ShowInTaskbar = false;
+                Hide();
+                trayIcon.Visible = true;
+                dataStream.Close();
+            }
+        }
+
+        void Form1_open(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+            ShowInTaskbar = true;
+            Show();
+            Focus();
+            trayIcon.Visible = false;
+            connectSerial(sender, e);
+        }
+
+        void FormShow(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+            ShowInTaskbar = true;
+            Show();
+            Focus();
+            trayIcon.Visible = false;
+            connectSerial(sender, e);
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            Visible = false;
+            ShowInTaskbar = false;
+        }
+    
+        void closeApp(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+    private void toggleSwitch1_MouseClick(object sender, MouseEventArgs e)
         {
             Console.WriteLine("clicked");
             if (toggleSwitch1.Checked == true)
@@ -139,8 +205,8 @@ namespace CaseLightingMod
         {
             try
             {
-                dataStream = new SerialPort("COM7", 9600);
-                dataStream.ReadTimeout = 1000;
+                dataStream = new SerialPort("COM7", 115200);
+                dataStream.ReadTimeout = 20;
                 dataStream.DtrEnable = true;
                 dataStream.Open();
                 Console.WriteLine("connected to device");
@@ -213,6 +279,7 @@ namespace CaseLightingMod
             {
                 dataStream.WriteLine(command);
                 dataStream.BaseStream.Flush();
+                Console.WriteLine("writing done");
             }
             catch
             {
@@ -222,8 +289,8 @@ namespace CaseLightingMod
 
         private void colorWheel1_ColorChanged(object sender, EventArgs e)
         {
-           
-            
+            //writeSerial("cRGB," + colorWheel1.Color.R + "," + colorWheel1.Color.G + "," + colorWheel1.Color.B);
+
         }
 
         private void trackBar1_MouseUp(object sender, EventArgs e)
